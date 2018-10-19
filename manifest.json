@@ -1,0 +1,20 @@
+{
+  "short_name": "RestaurantReviews",
+  "name": "Udacity Restaurant Review Project",
+  "icons": [
+    {
+      "src": "/img/icons-192.jpg",
+      "type": "img/jpg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/icons-512.jpg",
+      "type": "img/jpg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#ef9c02",
+  "display": "fullscreen",
+  "theme_color": "#ef9c02"
+}
