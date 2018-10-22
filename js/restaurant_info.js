@@ -138,11 +138,24 @@ const submitReview = document.getElementById('submitButton');
 
   DBHelper.addReview(restaurantID, name, rating, comments);
 
+  let review = {
+    'restaurant_id': parseInt(restaurantID),
+    'name': name,
+    'rating': parseInt(rating),
+    'comments': comments,
+    'createdAt': Date.now()
+  };
+  addReviewToHTML(review);
+
   //Resets form
   document.getElementById('reviews').reset();
 }
-
-
+//Displays review incase offline
+addReviewToHTML = (review) => {
+  const container = document.getElementById('reviews-container');
+  const ul = document.getElementById('reviews-list');
+  container.appendChild(ul);
+}
 
 /**
  * Create review HTML and add it to the webpage.
@@ -159,14 +172,10 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   date.innerHTML = `Date: ${new Date(review.createdAt).toLocaleString()}`;
-
   li.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
-  rating.setAttribute('id', 'review-rating');
-  rating.setAttribute('role', 'note');
-  rating.setAttribute('aria-label', 'rating');
   li.appendChild(rating);
 
   const comments = document.createElement('p');

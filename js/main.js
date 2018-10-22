@@ -181,6 +181,7 @@ createRestaurantHTML = (restaurant) => {
   };
   li.append(favorite);
 
+
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);

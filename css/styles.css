@@ -323,7 +323,7 @@ nav h1 a {
 #reviews {
 	border-radius: 20px;
 	padding: 20px;
-	background-color: #e19133;
+	background-color: #f2b171;
 }
 
 #reviews input[type=text], select {
@@ -356,17 +356,19 @@ nav h1 a {
 }
 
 button[type=button] {
-	background-color:#968d7f ;
-	color: white;
+	background-color: orange;
+  border: 3px solid #7a7979;
+  color: #2c2c2c;
 	padding: 14px 20px;
 	margin: 8px 0;
-	border:none;
 	border-radius: 4px;
 	cursor: pointer;
 }
 
-input[type=submit]:hover {
-	background-color: #af6a1a;
+button[type=button]:hover {
+	background-color: #f77a13;
+	border-radius: 2px;
+	border-color: #7a7979;
 }
 
 
@@ -405,7 +407,7 @@ input[type=submit]:hover {
   margin: 0 0 10px 10px;
 	color: #2c2c2c;
 }
-#review-rating {
+#user-restaurant-rating {
 	background-color: #ef9c02;
 	color: #fff;
 	padding: 5px;
@@ -416,9 +418,7 @@ input[type=submit]:hover {
 #reviews-list li h4 {
 	color: #2c2c2c;
 	margin: 0 0 10px 10px;
-
 }
-
 #reviews-list li h3 {
 	background-color: #333;
 	color: #fff;

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <script src="js/lazysizes.min.js" async=""></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Normalize.css for better cross-browser consistency -->
   <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
@@ -11,7 +12,7 @@
   <meta name="theme-color" content="#ef9c02">
   <script type="application/javascript" src="js/register.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/idb.js"></script>
-  <script src="lazysizes.min.js" async=""></script>
+
 
 
   <title>Restaurant Info</title>
@@ -53,12 +54,13 @@
 
     <!-- Beginning of review form  -->
     <div id="reviews-form">
-      <form id="reviews" class="" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="user-name" name="name" placeholder="Your name is...">
+      <!-- <span aria-describedby="ratingoptions" style="visibility:hidden">Please leave your restaurant review and rating using this form.</span> -->
+      <form id="reviews" aria-label="ratingoptions" method="post">
+        <label id="name">Name:</label>
+        <input type="text" id="user-name" aria-labelledby="name">
 
-        <label for="ratings">Ratings:</label>
-        <select id="numbers" name="rating">
+        <label id="ratings">Ratings:</label>
+        <select id="numbers" name="ratings" aria-labelledby="ratings">
           <option value="5">5</option>
           <option value="4">4</option>
           <option value="3">3</option>
@@ -66,13 +68,12 @@
           <option value="1">1</option>
         </select>
 
-        <label for="comment">Comments:</label>
-        <textarea id="user_comments" name="comments" placeholder="We would love to know what's on your mind..."></textarea>
+        <label id="comments">Comments:</label>
+        <textarea id="user_comments" aria-labelledby="comments"></textarea>
 
         <button id="submitButton" name="reviewBtn" type="button">Submit Review</button>
       </form>
     </div>
-
 
     <!-- Beginning reviews -->
     <section id="reviews-container" aria-label="reviews" role="main" tabindex="0">
@@ -80,6 +81,7 @@
     </section>
     <label id="review-label">Customer review ratings</label>
     <!-- End reviews -->
+
   </main>
   <!-- End main -->
 

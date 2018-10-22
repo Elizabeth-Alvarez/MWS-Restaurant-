@@ -72,36 +72,19 @@ class DBHelper {
       });
     }//End of fetch function
 
-    //FetchAndCacheRestaurant so when offline, you grab from DB
 
-    //Fetch FAVORITE status
-    static updateRestaurantFavorite(restaurantID, isFavorite) {
-      //console.log('RestaurantId: ' + restaurantID, 'Favorite: ' + isFavorite);
-
-      fetch(DBHelper.DATABASE_URL + `/${restaurantID}/?is_favorite=${isFavorite}`, {
-        method: 'PUT'
-      })
-      .then(response => response.json())
-      .then(restaurants =>
-        {
-          dbPromise.then(db => {
-            const tx = db.transaction('restaurants', 'readwrite');
-            const store = tx.objectStore('restaurants');
-            store.get(restaurantID)
-            .then(restaurant => {
-              restaurant.is_favorite = isFavorite; //changes favorite status
-              store.put(restaurant);
-            });
-            return tx.complete;
-          });
-        })
-      .catch(error => {
-      const errorMessage = (`Update favorite restaurant request FAILED. Returned status of ${error.statusText}`);
-    });
-  }//End of updateRestaurantFavorite function
+    //Grabs restaurants from IndexedDB when offline
+    static getRestaurantsFromIDB(callback){
+      dbPromise.then(db => {
+        const tx = db.transaction('restaurants', 'readwrite');
+        const store = tx.objectStore('restaurants');
+        return store.getAll();
+      });
+        return DBHelper.fetchRestaurants(callback);
+    }
 
 
-  //All reviews fetched from database
+  //Fetch all reviews
   static fetchRestaurantReviews(id, callback) {
      fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
     .then(response => response.json())
@@ -117,26 +100,25 @@ class DBHelper {
         });
         callback(null, reviews);
       })
-      //Here is where I handle loading reviews from IDB when offline
+      //Load reviews from IDB when offline
       .catch(error => {
-        DBHelper.getReviewsFromIDB('reviews', 'restaurant_id', id);
-        /*.then(storedReviews => {
+        DBHelper.getReviewsFromIDB('reviews', 'restaurant_id', id)
+        .then(storedReviews => {
           Promise.resolve(storedReviews);
           console.log(`Promise resolve results: ${storedReviews}`);
-        })*/
+        })
     });
   }//End of fetched reviews
 
 
   //Grabs reviews from IndexedDB when offline
   static getReviewsFromIDB(objectstore, idx, restID) {
-    console.log(`from IDB: ${objectstore} + ${idx} + ${restID}`);
+    //console.log(`from IDB: ${objectstore} + ${idx} + ${restID}`);
     dbPromise.then(db => {
       const tx = db.transaction(objectstore);
       const store = tx.objectStore(objectstore);
       const restIndex = store.index(idx);
-      restIndex.addAll(restID);
-      console.log(`This is index review ${restIndex}`);
+      return restIndex.getAll(restID);
     });
   }//End of getReviewsFromIDB
 
@@ -144,33 +126,38 @@ class DBHelper {
   //Adds submitted reviews to DB
   static addReview(id, name, rating, comments) {
 
-    let body = {
-      'restaurant_id': id,
-      'name': name,
-      'rating': rating,
-      'comments': comments,
-      'createdAt': Date.now()
-    }
-    console.log(body);
-
     //Check if the user is online or offline
     let offlineReviewObj = {
       name: 'reviews',
-      data: body,
+      data: {
+        'restaurant_id': parseInt(id),
+        'name': name,
+        'rating': parseInt(rating),
+        'comments': comments,
+        'createdAt': Date.now()
+      },
       object_type: 'offline_reviews'
-    }
-    if(!navigator.online && (offlineReviewObj.name === 'reviews')) {
+    };
+
+    if(!navigator.onLine && (offlineReviewObj.name === 'reviews')) {
       DBHelper.reviewSentWhenOnline(offlineReviewObj);
       return;
     }
 
+      let body = {
+        'restaurant_id': parseInt(id),
+        'name': name,
+        'rating': parseInt(rating),
+        'comments': comments,
+        'createdAt': Date.now()
+      };
 
     fetch(`http://localhost:1337/reviews/`, {
       method: 'POST',
       body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      }
+      headers: new Headers ({
+        'Content-Type': 'application/json'
+      })
     })
     .then(response => response.json())
     //.then(response => console.log(response.json())) //successfully grabbing data
@@ -178,16 +165,55 @@ class DBHelper {
 }//End of fetch function
 
 
-  //OFFLINE METHOD HERE
+  //Method to handle offline review submissions
   static reviewSentWhenOnline(offlineReviewObj) {
-    //console.log(`This is offline object ${offlineReviewObj}`);
+    //Adding review to localstorage
+    localStorage.setItem('data', JSON.stringify(offlineReviewObj.data));
+    //Check if online
+    window.addEventListener('online', (event) => {
+      let reviewData = JSON.parse(localStorage.getItem('data'));
 
+      //Add review data to DB
+      if(reviewData !== null) {
+        if(offlineReviewObj.name === 'reviews') {
+          let id = offlineReviewObj.data.restaurant_id;
+          let name = offlineReviewObj.data.name;
+          let rating = offlineReviewObj.data.rating;
+          let comments = offlineReviewObj.data.comments;
 
+          DBHelper.addReview(id, name, rating, comments);
+        }
+        //Once data is sent, erase from local storage
+        localStorage.removeItem('reviewData');
+      }
+    });
   }// End of reviewsSentWhenOnline
 
 
-
-
+  //Fetch FAVORITE status
+  static updateRestaurantFavorite(restaurantID, isFavorite) {
+    //console.log('RestaurantId: ' + restaurantID, 'Favorite: ' + isFavorite);
+    /*let fav = {
+      'is_favorite' : isFavorite
+    }*/
+    fetch(DBHelper.DATABASE_URL + `/${restaurantID}/?is_favorite=${isFavorite}`, {
+      method: 'PUT'
+      //body: JSON.stringify(fav)
+    })
+    //.then(response => response.json())
+    .then(restaurants =>
+      {
+        dbPromise.then(db => {
+          const tx = db.transaction('restaurants', 'readwrite');
+          const store = tx.objectStore('restaurants');
+          store.get(restaurantID)
+          .then(restaurant => {
+            restaurant.is_favorite = isFavorite; //changes favorite status
+            store.put(restaurant);
+          });
+        })
+      })
+}//End of updateRestaurantFavorite function
 
 
   /**
@@ -195,7 +221,7 @@ class DBHelper {
    */
   static fetchRestaurantById(id, callback) {
   // fetch all restaurants with proper error handling.
-  DBHelper.fetchRestaurants((error, restaurants) => {
+  DBHelper.getRestaurantsFromIDB((error, restaurants) => {
     if (error) {
       callback(error, null);
     } else {
@@ -209,12 +235,13 @@ class DBHelper {
   });
 }
 
+
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
   static fetchRestaurantByCuisine(cuisine, callback) {
     // Fetch all restaurants  with proper error handling
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -225,12 +252,13 @@ class DBHelper {
     });
   }
 
+
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
    */
   static fetchRestaurantByNeighborhood(neighborhood, callback) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -241,12 +269,13 @@ class DBHelper {
     });
   }
 
+
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -262,12 +291,13 @@ class DBHelper {
     });
   }
 
+
   /**
    * Fetch all neighborhoods with proper error handling.
    */
   static fetchNeighborhoods(callback) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -280,12 +310,13 @@ class DBHelper {
     });
   }
 
+
   /**
    * Fetch all cuisines with proper error handling.
    */
   static fetchCuisines(callback) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -298,12 +329,14 @@ class DBHelper {
     });
   }
 
+
   /**
    * Restaurant page URL.
    */
   static urlForRestaurant(restaurant) {
     return (`./restaurant.html?id=${restaurant.id}`);
   }
+
 
   /**
    * Restaurant image URL.
@@ -316,12 +349,14 @@ class DBHelper {
     return (`/img/${restaurant.id}.jpg`);
   }
 
+
   /**
   * Restaurant image alt url
   */
   static imageAltForRestaurant(restaurant) {
     return (`${restaurant.name}`);
   }
+
 
   /**
    * Map marker for a restaurant.
