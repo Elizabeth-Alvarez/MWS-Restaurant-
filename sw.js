@@ -59,17 +59,17 @@ self.addEventListener('fetch', function(event) {
           return response;
         }
         //If not in cache, lets add it
-        //let cloneRequest = event.request.clone();
-        fetch(event.request).then(function(response) {
+        let cloneRequest = event.request.clone();
+        fetch(cloneRequest).then(function(response) {
           if(!response) {
             console.log("[serviceWorker] No fetch response");
             return response;
           }
 
           let cloneResponse = response.clone();
-          return caches.open(restaurant_cache).then(function(cache) {
+          caches.open(restaurant_cache).then(function(cache) {
           //console.log(event.request);
-          return cache.put(event.request.url, cloneResponse);
+          cache.put(event.request.url, cloneResponse);
           return response;
           });
         }).catch(function(error) {

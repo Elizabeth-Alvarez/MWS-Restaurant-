@@ -1,6 +1,10 @@
 @charset "utf-8";
 /* CSS Document */
-
+@font-face {
+  font-family: 'Arvo';
+  font-display: auto;
+  src: local('Arvo'), url(https://fonts.gstatic.com/s/arvo/v9/rC7kKhY-eUDY-ucISTIf5PesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+}
 body,td,th,p{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10pt;
@@ -139,6 +143,12 @@ nav h1 a {
   width: 100%;
   background-color: #ccc;
 }
+#map background-image: url(https://maps.googleapis.com/maps/api/staticmap?center=New+York&zoom=12&scale=1&size=600x300&maptype=roadmap&key=AIzaSyAztjRv0BoOcA3UfYfNiBBftnrADdH8aFU&format=jpg&visual_refresh=true);
+
+svg {
+	display: none;
+	data-sizes: auto;
+}
 /* ====================== Restaurant Filtering ====================== */
 .filter-options {
   width: 100%;
@@ -226,14 +236,21 @@ nav h1 a {
   text-transform: uppercase;
 }
 
-/* Favorite Button */
-#restaurants-list li .fav_btn {
-	border-radius: 50px;
+/* Favorite Button
+button.fav_btn[aria-pressed=false] {
 	color: black;
 }
-#restaurants-list li .fav_btn2 {
-	border-radius: 50px;
+button.fav_btn[aria-pressed=true] {
 	color: red;
+}*/
+#restaurants-list li .fav_btn {
+  border-radius: 50px;
+}
+#restaurants-list li .favorite_yes {
+  color:red;
+}
+#restaurants-list li .favorite_no {
+  color:black;
 }
 
 /* ====================== Restaurant Details ====================== */

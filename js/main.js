@@ -84,6 +84,8 @@ window.initMap = () => {
     center: loc,
     scrollwheel: false
   });
+  //map.data.overrideStyle({display: 'none'});
+
   updateRestaurants();
 }
 
@@ -160,27 +162,27 @@ createRestaurantHTML = (restaurant) => {
   //------------------------- ADD FAVORITE BUTTON HERE ------------------------------
   const favorite = document.createElement('button');
   favorite.innerHTML = '&#9829';
-  favorite.className = 'fav_btn';
-  //favorite.classList.add('fav_btn');
+  favorite.classList.add('fav_btn');
+
   favorite.onclick = function() {
     let restaurantID = restaurant.id;
     let isFavorite = restaurant.is_favorite;
     console.log(`Current status of favorite: ${isFavorite}`);
 
     if(isFavorite) {
-      favorite.className = 'fav_btn2';
       console.log("New value: ", isFavorite);
       DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
+      changeFavBtnColor(favorite, restaurant.is_favorite);
+      restaurant.is_favorite = !restaurant.is_favorite;
     }
     else {
-      favorite.className = 'fav_btn';
-      console.log("New value: ", isFavorite);
-      DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
+     console.log("New value: ", isFavorite);
+     DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
+     changeFavBtnColor(favorite, restaurant.is_favorite);
+     restaurant.is_favorite = !restaurant.is_favorite;
     }
-    restaurant.is_favorite = !restaurant.is_favorite;
   };
   li.append(favorite);
-
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -201,6 +203,20 @@ createRestaurantHTML = (restaurant) => {
 
   return li;
 }
+
+changeFavBtnColor = (btn, favStatus) => {
+  console.log(`favorite status is ${favStatus} `);
+  if(favStatus) {
+    btn.classList.remove('favorite_no');
+    btn.classList.add('favorite_yes');
+    btn.setAttribute('aria-label', `Mark as your favorite restaurant`);
+  }
+  else {
+    btn.classList.remove('favorite_yes');
+    btn.classList.add('favorite_no');
+  }
+}
+
 
 /**
  * Add markers for current restaurants to the map.

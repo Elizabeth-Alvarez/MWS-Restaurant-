@@ -193,12 +193,8 @@ class DBHelper {
   //Fetch FAVORITE status
   static updateRestaurantFavorite(restaurantID, isFavorite) {
     //console.log('RestaurantId: ' + restaurantID, 'Favorite: ' + isFavorite);
-    /*let fav = {
-      'is_favorite' : isFavorite
-    }*/
     fetch(DBHelper.DATABASE_URL + `/${restaurantID}/?is_favorite=${isFavorite}`, {
       method: 'PUT'
-      //body: JSON.stringify(fav)
     })
     //.then(response => response.json())
     .then(restaurants =>
