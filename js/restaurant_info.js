@@ -9,13 +9,20 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
+      if(navigator.onLine) {
+        try {
+          self.map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: restaurant.latlng,
+            scrollwheel: false,
+            disableDefaultUI: true
+          });
+          DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+        } catch(error) {
+          console.log("Google Maps is not available offline", error);
+        }
+      }
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
 }
@@ -69,7 +76,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-
   // fill reviews
   DBHelper.fetchRestaurantReviews(self.restaurant.id, (error, reviews) => {
     self.restaurant.reviews = reviews;

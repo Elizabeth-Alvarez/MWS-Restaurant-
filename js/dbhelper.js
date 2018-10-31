@@ -48,7 +48,7 @@ class DBHelper {
   /**
    * Fetch all restaurants.
    */
-      static fetchRestaurants(callback) {
+      static getRestaurantsFromIDB(callback) {
         fetch(DBHelper.DATABASE_URL) //grabs data from http://localhost:1337/restaurants
         .then(response => response.json()) //reads and parses data using json()
         //.then(response => console.log(response.json())) //successfully grabbing data
@@ -60,7 +60,9 @@ class DBHelper {
               restaurants.forEach(restaurant => {  //loop through the data
                 store.put(restaurant); //add data to db
               });
+              //return store.getAll();
                return tx.complete; //verifies transaction successfully completed
+               //return tx.complete.then(() => Promise.resolve(restaurants));
             });
             //Callback functions allow functions to use other functions within parameters
             //So they can be executed after the current function has finished
@@ -74,39 +76,46 @@ class DBHelper {
 
 
     //Grabs restaurants from IndexedDB when offline
-    static getRestaurantsFromIDB(callback){
-      dbPromise.then(db => {
-        const tx = db.transaction('restaurants', 'readwrite');
-        const store = tx.objectStore('restaurants');
-        return store.getAll();
-      });
-        return DBHelper.fetchRestaurants(callback);
-    }
+    static fetchRestaurants(callback){
+      //console.log("You have reached IndexedDB");
+        dbPromise.then(db => {
+          const tx = db.transaction('restaurants');
+          const store = tx.objectStore('restaurants');
+          //console.log(store);
+          return store.getAll();
+        })
+        .then(restaurants => {
+       if (restaurants.length !== 0) {
+        Promise.resolve(restaurants);
+       }
+        return DBHelper.getRestaurantsFromIDB(callback);
+        //callback(null, restaurants);
+    })
+  }
 
 
   //Fetch all reviews
   static fetchRestaurantReviews(id, callback) {
-     fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
+    fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
     .then(response => response.json())
     .then(reviews =>
       {
         dbPromise.then(db => {
-          const tx = db.transaction('reviews', 'readwrite');
+          if (!db) return;
+          let tx = db.transaction('reviews', 'readwrite');
           const store = tx.objectStore('reviews');
           reviews.forEach(review => {
             store.put(review);
           });
-          return tx.complete;
         });
-        callback(null, reviews);
+        callback(id, reviews);
+        Promise.resolve(reviews);
       })
       //Load reviews from IDB when offline
       .catch(error => {
-        DBHelper.getReviewsFromIDB('reviews', 'restaurant_id', id)
-        .then(storedReviews => {
-          Promise.resolve(storedReviews);
-          console.log(`Promise resolve results: ${storedReviews}`);
-        })
+        //console.log(id);
+        return DBHelper.getReviewsFromIDB('reviews', 'restaurants', id);
+        //callback(DBHelper.getReviewsFromIDB('reviews', 'restaurant_id', id));
     });
   }//End of fetched reviews
 
@@ -114,10 +123,12 @@ class DBHelper {
   //Grabs reviews from IndexedDB when offline
   static getReviewsFromIDB(objectstore, idx, restID) {
     //console.log(`from IDB: ${objectstore} + ${idx} + ${restID}`);
-    dbPromise.then(db => {
+     return dbPromise.then(db => {
+       if (!db) return;
       const tx = db.transaction(objectstore);
       const store = tx.objectStore(objectstore);
       const restIndex = store.index(idx);
+      //console.log(`This is IDB ${restIndex.getAll(restID)}`);
       return restIndex.getAll(restID);
     });
   }//End of getReviewsFromIDB
@@ -217,7 +228,7 @@ class DBHelper {
    */
   static fetchRestaurantById(id, callback) {
   // fetch all restaurants with proper error handling.
-  DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+  DBHelper.fetchRestaurants((error, restaurants) => {
     if (error) {
       callback(error, null);
     } else {
@@ -237,7 +248,7 @@ class DBHelper {
    */
   static fetchRestaurantByCuisine(cuisine, callback) {
     // Fetch all restaurants  with proper error handling
-    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+    DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -254,7 +265,7 @@ class DBHelper {
    */
   static fetchRestaurantByNeighborhood(neighborhood, callback) {
     // Fetch all restaurants
-    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+    DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -271,7 +282,7 @@ class DBHelper {
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
     // Fetch all restaurants
-    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+    DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -293,7 +304,7 @@ class DBHelper {
    */
   static fetchNeighborhoods(callback) {
     // Fetch all restaurants
-    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+    DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -312,7 +323,7 @@ class DBHelper {
    */
   static fetchCuisines(callback) {
     // Fetch all restaurants
-    DBHelper.getRestaurantsFromIDB((error, restaurants) => {
+    DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {

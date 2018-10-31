@@ -75,16 +75,23 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  let loc = {
-    lat: 40.722216,
-    lng: -73.987501
-  };
-  self.map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
-  //map.data.overrideStyle({display: 'none'});
+  if(navigator.onLine) {
+    try{
+      let loc = {
+        lat: 40.722216,
+        lng: -73.987501
+      };
+      self.map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: loc,
+        scrollwheel: false,
+        disableDefaultUI: true
+      });
+
+    } catch(error) {
+      console.log("Google Maps is not available offline", error);
+    }
+  }
 
   updateRestaurants();
 }
@@ -169,18 +176,16 @@ createRestaurantHTML = (restaurant) => {
     let isFavorite = restaurant.is_favorite;
     console.log(`Current status of favorite: ${isFavorite}`);
 
-    if(isFavorite) {
-      console.log("New value: ", isFavorite);
+    if(!isFavorite) {
+      console.log("False value: ", isFavorite);
       DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
-      changeFavBtnColor(favorite, restaurant.is_favorite);
+      changeFavBtnColor(favorite, isFavorite);
       restaurant.is_favorite = !restaurant.is_favorite;
+      return;
     }
-    else {
-     console.log("New value: ", isFavorite);
-     DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
-     changeFavBtnColor(favorite, restaurant.is_favorite);
-     restaurant.is_favorite = !restaurant.is_favorite;
-    }
+    DBHelper.updateRestaurantFavorite(restaurantID, isFavorite);
+    changeFavBtnColor(favorite, isFavorite);
+    restaurant.is_favorite = !restaurant.is_favorite;
   };
   li.append(favorite);
 
@@ -206,14 +211,14 @@ createRestaurantHTML = (restaurant) => {
 
 changeFavBtnColor = (btn, favStatus) => {
   console.log(`favorite status is ${favStatus} `);
-  if(favStatus) {
-    btn.classList.remove('favorite_no');
-    btn.classList.add('favorite_yes');
+  if(!favStatus) {
+    btn.classList.remove('favorite_yes');
+    btn.classList.add('favorite_no');
     btn.setAttribute('aria-label', `Mark as your favorite restaurant`);
   }
   else {
-    btn.classList.remove('favorite_yes');
-    btn.classList.add('favorite_no');
+    btn.classList.remove('favorite_no');
+    btn.classList.add('favorite_yes');
   }
 }
 
@@ -222,6 +227,9 @@ changeFavBtnColor = (btn, favStatus) => {
  * Add markers for current restaurants to the map.
  */
 addMarkersToMap = (restaurants = self.restaurants) => {
+  if(!map || !google.maps.Map) {
+    return;
+  }
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
