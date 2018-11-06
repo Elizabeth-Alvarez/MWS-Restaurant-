@@ -1,5 +1,23 @@
 #### Elizabeth comments
 
+Stage 03
+
+What really became challenging for me in this part of the project was adding offline functionality as well as caching. 
+
+The following are resources I relied on heavily to complete this project:
+
+Slack Channel students
+Doug Brown [Project Coach] - https://www.youtube.com/watch?v=a7i0U1aCBok
+Elisa Romondia Lorenzo Zaccagnini Project 3 Walkthrough - https://www.youtube.com/watch?v=XbCwxeCqxw4
+https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Sending_and_retrieving_form_data
+https://developer.mozilla.org/en-US/docs/Web/API/NavigatorOnLine/Online_and_offline_events
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+https://medium.com/@onejohi/offline-web-apps-using-local-storage-and-service-workers-5d40467117b9
+
+
+-------------------------------------------------------------------------------------------------------------
+
 Stage 02 - Udacity Instructions:
 
 - Fork and clone the server repository. You’ll use this development server to develop your project code.
