@@ -187,6 +187,9 @@ createRestaurantHTML = (restaurant) => {
     changeFavBtnColor(favorite, isFavorite);
     restaurant.is_favorite = !restaurant.is_favorite;
   };
+  let isFav = restaurant.is_favorite === "true";
+  changeFavBtnColor(favorite, isFav);
+
   li.append(favorite);
 
   const neighborhood = document.createElement('p');

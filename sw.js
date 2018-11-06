@@ -148,7 +148,6 @@ function cacheImage(request) {
   let imageUrl = request.url;
   // Make a new URL with a stripped suffix and extension from the request url
   // i.e. /img/1-medium.jpg  will become  /img/1
-  // we'll use this as the KEY for storing image into cache
   imageUrl = imageUrl.replace(/_small\.\w{3}|_reg\.\w{3}/i, '');
 
   return caches.open(restaurantImg_cache).then(function(cache) {
@@ -180,7 +179,7 @@ self.addEventListener('fetch', function(event) {
         }
         return caches.open(restaurant_cache).then(function(cache) {
           if (event.request.url.indexOf('/restaurant.html') > -1) {
-            cache.put(event.request.url, response.clone());
+            cache.put(event.request, response.clone());
           }
           return response;
         });
